@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Landing Page for Events Organiser</title>
+
+    <!-- Link to external CSS stylesheet -->
+    <link rel="stylesheet" href="Test_07062024_css_styles.css">
+    <!-- Include Vue.js library from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"> </script>
+</head>
+
+<body>
+    <!-- Vue app container -->
+    <div id="app1">
+        <!-- Conditional rendering of popup based on showPopup flag -->
+        <div v-if="showPopup" class="container">
+            <div class="popup">
+                 <!-- Event logo image -->
+                <img alt="Events Logo"
+                    src="https://eventgroupweddings.com/wp-content/themes/theweddingfix-new/images/logo.png">
+               <!-- Button to close popup and show side navigation -->
+                    <button v-on:click="closePopup" type="button">Jump in the Luxury Events Experience!</button>
+            </div>
+        </div>
+
+        <!-- Conditional rendering of guest table based on showTable flag -->
+        <table v-if="showTable" class="guestTable">
+            <thead>
+                <tr>
+                    <th>Guest name</th>
+                    <th>Guest age</th>
+                    <th>Meal</th>
+                    <th>Cancel participation</th>
+                </tr>
+            </thead>
+        </table>
+
+         <!-- Loop through guestList array and render guest table rows -->
+        <span v-for="item in guestList" v-if="showTable">
+         <!-- Custom guest-table component -->
+            <guest-table :guest-name="item.guestName" :guest-age="item.guestAge" :food-check="item.foodCheck"
+                v-on:remove="guestList.splice(index, 1)">
+            </guest-table>
+        </span>
+
+         <!-- Conditional rendering of side navigation based on showSideNav flag -->
+        <div v-if="showSideNav" id="mySidenav" class="sidenav">
+            <h1> Kindly fill in your details</h1>
+
+            <!-- Form to collect guest information -->
+            <form>
+                <div>
+                     <!-- Input field for guest name -->
+                    <label for="name">Name</label>
+                    <input v-model="nameInput" id="name" type="text" name="name">
+                    <!-- Error message for invalid name input -->
+                    <p v-if="!nameIsValid" class="error-message">The field is required</p>
+                </div>
+
+                <div>
+                     <!-- Input field for guest age -->
+                    <label for="age">Age</label>
+                    <input v-model.number="ageInput" id="age" type="number" min="1" name="age">
+                      <!-- Error message for invalid age input -->
+                    <p v-if="!ageIsValid" class="error-message">The field is required</p>
+                </div>
+
+                <div>
+                     <!-- Input field for food preferences -->
+                    <label for="food">Food preferences</label>
+                    <input v-on:click="onToggleCheck" type="checkbox" unchecked>
+                     <!-- Conditional rendering of food select options based on showFood flag -->
+                    <select v-if="showFood" v-model="foodInput" type="text" id="food" name="food">
+                        <option value="Meat">Meat</option>
+                        <option value="Vegetarian food">Vegetarian food</option>
+                        <option value="Vegan food">Vegan food</option>
+                        <option value="N/A">None</option>
+                    </select>
+                      <!-- Error message for invalid food preference input -->
+                    <p v-if="!foodPreferenceIsValid" class="error-message">The field is required</p>
+                </div>
+                <div>
+                    <!-- Button to save guest information, disabled if form is invalid -->
+                    <button :disabled="!formIsValid" v-on:click="saveGuestInfo" type="button" class="btn">I'm
+                        in</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+             // Define custom Vue component for guest table
+        Vue.component('guest-table', {
+            props: {
+                       // Guest name property
+                guestName: {
+                    type: String,
+                    required: true,
+                },
+                     // Guest age property
+                guestAge: {
+                    type: Number,
+                    required: true,
+                },
+                 // Food preference property
+                foodCheck: {
+                    type: String,
+                    required: true,
+                }
+            },
+// Template for guest table row
+            template: `
+                <table class="guestTable">
+                    <tr>
+                        <td>{{guestName}}</td>
+                        <td>{{guestAge}}</td>
+                        <td>{{foodCheck}}</td>
+                        <td>
+                            <!-- Button to remove guest from list -->
+                            <button v-on:click = "$emit(\'remove\')" class="btn">Delete</button>
+                        </td>
+                    </tr> 
+                </table>
+               `
+        })
+
+        // Create new Vue instance
+        new Vue({
+           // Element to render the Vue app
+            el: '#app1',
+            data: {
+                   // Flag to show/hide popup
+                showPopup: true,
+                // Flag to show/hide side navigation
+                showSideNav: false,
+                 // Flag to show/hide food select options
+                showFood: false,
+                 // Flag to show/hide guest table
+                showTable: false,
+                 // Input field values
+                nameInput: '',
+                ageInput: '',
+                foodInput: '',
+                  // Guest list array
+                // commented out as the below do not allow the validation of inputs + they may not be required under data section (they are not inside v-model)
+                // nameIsValid: true,
+                // ageIsValid: true,
+                // foodPreferenceIsValid: true,
+                // formIsValid: true,
+                guestList: [],
+            },
+
+            computed: {
+                nameIsValid() {
+                    return !!this.nameInput
+                },
+                ageIsValid() {
+                    return typeof this.ageInput === 'number' && 0 < this.ageInput <= 90
+                },
+                foodPreferenceIsValid() {
+                    return this.foodPreferenceIsValid = !!this.foodInput
+                },
+                formIsValid() {
+                    return this.nameIsValid && this.ageIsValid && this.foodPreferenceIsValid
+                }
+            },
+
+            methods: {
+                // Toggle popup and side navigation
+                closePopup: function () {
+                    this.showPopup = !this.showPopup;
+                    this.showSideNav = !this.showSideNav
+                },
+                //commented out as this function moved under saveGuestInfo + button deleted above
+                //      closeNav: function () {
+                //         this.showSideNav = !this.showSideNav
+                //      },
+                onToggleCheck: function () {
+                    this.showFood = !this.showFood
+                },
+                closeSideShowTable: function () {
+                    this.showTable = !this.showTable
+                },
+
+                //the idea is that on clicking the button all info from inputs goes to guestList and from there to table
+
+                saveGuestInfo: function () {
+                    var guest = {
+                        guestName: this.nameInput,
+                        guestAge: this.ageInput,
+                        foodCheck: this.foodInput,
+                    };
+
+                    try {
+                        var guestList = JSON.parse(localStorage.guestList)
+                    } catch {
+                        var guestList = [];
+                    }
+
+                    guestList.push(guest)
+                    guest = '';
+
+                    this.guestList = guestList;
+
+                    localStorage.guestList = JSON.stringify(guestList);
+                    this.showTable = !this.showTable;
+                    this.showSideNav = !this.showSideNav;
+                    alert('See you soon' + ' ' + this.nameInput + ' ' + "!");
+                },
+            },
+            created: function () {
+                 // Initialize guest list from local storage
+                try {
+                    this.guestList = JSON.parse(localStorage.guestList)
+                } catch {
+                    this.guestList = [];
+                }
+            }
+        })
+    </script>
+</body>
+
+</html>
